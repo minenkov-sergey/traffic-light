@@ -1,28 +1,54 @@
 <template>
-  <div class="lightBox">
-    <Red class="light" />
-    <Yellow class="light" />
-    <Green class="light" />
+  <div>
+    <router-view>
+      <div class="lightBox">
+        <Light path="/red" color="red" />
+        <Light path="/yellow" color="yellow" />
+        <Light path="/green" color="green" />
+      </div>
+      <Counter :time="timer" />
+    </router-view>
   </div>
 </template>
 
 <script>
-import Red from "./components/Red.vue";
-import Yellow from "./components/Yellow.vue";
-import Green from "./components/Green.vue";
+import Light from "./components/Light.vue";
+import Counter from "./components/Counter.vue";
 
 export default {
   name: "App",
   components: {
-    Red,
-    Yellow,
-    Green
+    Light,
+    Counter
   },
   data() {
     return {
-      current: "",
-      previous: ""
+      timer: Number,
+      lights: [
+        { nextColor: "yellow", time: 10 },
+        { nextColor: "green", time: 3 },
+        { nextColor: "yellow", time: 15 },
+        { nextColor: "red", time: 3 }
+      ],
+      lightIndex: 0
     };
+  },
+  methods: {
+    setLights(lights) {
+      setTimeout(() => {
+        this.$router.push(lights.nextColor);
+      }, lights.time * 1000);
+      this.timer = lights.time;
+      this.lightIndex++;
+    }
+  },
+
+  created() {
+    this.setLights(this.lights[this.lightIndex]);
+    console.log(this.$route.path);
+  },
+  updated() {
+    this.setLights(this.lights[this.lightIndex]);
   }
 };
 </script>
@@ -32,8 +58,11 @@ export default {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  height: 100vh;
+  background-color: lightblue;
   display: flex;
   flex-direction: row;
+  align-items: center;
   justify-content: center;
 }
 .lightBox {
