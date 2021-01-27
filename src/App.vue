@@ -1,13 +1,11 @@
 <template>
   <div>
-    <router-view>
-      <div class="lightBox">
-        <Light path="/red" color="red" />
-        <Light path="/yellow" color="yellow" />
-        <Light path="/green" color="green" />
-      </div>
-      <Counter :time="timer" />
-    </router-view>
+    <div class="lightBox">
+      <Light :attention="attention" path="/red" color="red" />
+      <Light :attention="attention" path="/yellow" color="yellow" />
+      <Light :attention="attention" path="/green" color="green" />
+    </div>
+    <Counter @attention="setAttention" v-bind:time="timer" />
   </div>
 </template>
 
@@ -23,31 +21,73 @@ export default {
   },
   data() {
     return {
+      currentPage: window.location.pathname,
+      attention: false,
       timer: Number,
+      tempTime: Number,
       lights: [
         { nextColor: "yellow", time: 10 },
         { nextColor: "green", time: 3 },
         { nextColor: "yellow", time: 15 },
         { nextColor: "red", time: 3 }
       ],
-      lightIndex: 0
+      lightIndex: 0 //this key depends on current route
     };
+  },
+  watch: {
+    currentPage(newCurrentPage) {
+      localStorage.currentPage = newCurrentPage;
+    },
+    lightIndex(newLightIndex) {
+      localStorage.lightIndex = newLightIndex;
+    }
   },
   methods: {
     setLights(lights) {
+      this.attention = false;
       setTimeout(() => {
         this.$router.push(lights.nextColor);
+        this.setLights(this.lights[this.lightIndex]);
       }, lights.time * 1000);
+
       this.timer = lights.time;
-      this.lightIndex++;
+      if (this.lightIndex === 3) {
+        this.lightIndex = 0;
+      } else {
+        this.lightIndex++;
+      }
+    },
+    setAttention() {
+      this.attention = true;
     }
   },
-
   created() {
-    this.setLights(this.lights[this.lightIndex]);
-    console.log(this.$route.path);
-  },
-  updated() {
+    // if (
+    //   localStorage.currentPage &&
+    //   localStorage.lightIndex &&
+    //   localStorage.timer
+    // ) {
+    //   console.log(this.currentPage);
+    //   console.log(window.location.pathname);
+    //   console.log(localStorage.currentPage);
+    //   console.log(localStorage.lightIndex);
+    //   console.log(localStorage.timer);
+    //   this.timer = localStorage.timer;
+    //   this.currentPage = localStorage.currentPage;
+    //   this.$router.push(this.currentPage);
+    //   this.lightIndex = localStorage.lightIndex;
+    //   this.tempTime = this.lights[this.lightIndex].time;
+    //   this.lights[this.lightIndex].time = localStorage.timer;
+    //   this.setLights(this.lights[this.lightIndex]);
+    //   this.lights[this.lightIndex].time = this.tempTime;
+    // } else {
+    if (this.currentPage === "/yellow") {
+      this.lightIndex = 1;
+    } else if (this.currentPage === "/green") {
+      this.lightIndex = 2;
+    }
+
+    // pass object contains time and color that should be set next.
     this.setLights(this.lights[this.lightIndex]);
   }
 };

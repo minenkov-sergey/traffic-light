@@ -11,8 +11,19 @@ export default {
       timer: this.time
     };
   },
+  watch: {
+    timer(newTimer) {
+      localStorage.timer = newTimer;
+    }
+  },
   mounted() {
     setInterval(() => {
+      if (this.timer === 0) {
+        this.timer = this.time;
+      }
+      if (this.timer === 3) {
+        this.$emit("attention");
+      }
       this.timer--;
     }, 1000);
   }
