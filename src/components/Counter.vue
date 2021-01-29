@@ -1,14 +1,14 @@
 <template>
-  <div class="counter">{{timer}}</div>
+  <div class="counter">{{ timer }}</div>
 </template>
 <script>
 export default {
   props: {
-    time: Number
+    time: Number,
   },
   data() {
     return {
-      timer: this.time
+      timer: this.time,
     };
   },
   watch: {
@@ -22,11 +22,11 @@ export default {
         this.timer = this.time;
       }
       if (this.timer === 3) {
-        this.$emit("attention");
+        this.$emit("blink");
       }
       this.timer--;
     }, 1000);
-  }
+  },
 };
 </script>
 <style scoped>

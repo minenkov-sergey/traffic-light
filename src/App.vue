@@ -1,11 +1,11 @@
 <template>
   <div>
     <div class="lightBox">
-      <Light :attention="attention" path="/red" color="red" />
-      <Light :attention="attention" path="/yellow" color="yellow" />
-      <Light :attention="attention" path="/green" color="green" />
+      <Light :blink="blink" path="/red" color="red" />
+      <Light :blink="blink" path="/yellow" color="yellow" />
+      <Light :blink="blink" path="/green" color="green" />
     </div>
-    <Counter @attention="setAttention" v-bind:time="timer" />
+    <Counter @blink="setBlink" :time="timer" />
   </div>
 </template>
 
@@ -22,16 +22,17 @@ export default {
   data() {
     return {
       currentPage: window.location.pathname,
-      attention: false,
+      blink: false,
       timer: Number,
-      tempTime: Number,
       lights: [
         { nextColor: "yellow", time: 10 },
         { nextColor: "green", time: 3 },
         { nextColor: "yellow", time: 15 },
-        { nextColor: "red", time: 3 }
+        { nextColor: "red", time: 3 },
       ],
-      lightIndex: 0 //this key depends on current route
+      lightIndex: Number, //this key depends on current route
+      initialLightIndex: Number, //get index on page load
+      isPageChanged: Boolean //page was changed from another page by edit address field?
     };
   },
   watch: {
@@ -40,57 +41,58 @@ export default {
     },
     lightIndex(newLightIndex) {
       localStorage.lightIndex = newLightIndex;
-    }
+    },
   },
   methods: {
-    setLights(lights) {
-      this.attention = false;
+    // this method gets object contains time and color that should be set next.
+    setLights(lights, storageTime=this.lights[this.lightIndex].time) {
+      if (storageTime <= 3) {
+        this.blink = true
+      } else {
+        this.blink = false;
+      }
+      this.timer = storageTime;
       setTimeout(() => {
         this.$router.push(lights.nextColor);
         this.setLights(this.lights[this.lightIndex]);
-      }, lights.time * 1000);
-
-      this.timer = lights.time;
-      if (this.lightIndex === 3) {
+      }, this.timer * 1000);
+  
+      if (this.lightIndex >= 3) {
         this.lightIndex = 0;
       } else {
         this.lightIndex++;
       }
     },
-    setAttention() {
-      this.attention = true;
+    setBlink() {
+      this.blink = true;
+    },
+    checkIsPageChanged () { //check if page was changed from another page by edit address field
+
+      if (this.currentPage === '/red') {
+        this.initialLightIndex = 1
+      } else if (this.currentPage === '/yellow') {
+        this.initialLightIndex = 2
+      } else if (this.currentPage === '/green') {
+        this.initialLightIndex = 3
+      }
+      if (Number(localStorage.lightIndex) !== this.initialLightIndex) {
+          this.isPageChanged = true    
+        } else {
+          this.isPageChanged = false;
+      }
+      this.lightIndex = this.initialLightIndex - 1
     }
   },
   created() {
-    // if (
-    //   localStorage.currentPage &&
-    //   localStorage.lightIndex &&
-    //   localStorage.timer
-    // ) {
-    //   console.log(this.currentPage);
-    //   console.log(window.location.pathname);
-    //   console.log(localStorage.currentPage);
-    //   console.log(localStorage.lightIndex);
-    //   console.log(localStorage.timer);
-    //   this.timer = localStorage.timer;
-    //   this.currentPage = localStorage.currentPage;
-    //   this.$router.push(this.currentPage);
-    //   this.lightIndex = localStorage.lightIndex;
-    //   this.tempTime = this.lights[this.lightIndex].time;
-    //   this.lights[this.lightIndex].time = localStorage.timer;
-    //   this.setLights(this.lights[this.lightIndex]);
-    //   this.lights[this.lightIndex].time = this.tempTime;
-    // } else {
-    if (this.currentPage === "/yellow") {
-      this.lightIndex = 1;
-    } else if (this.currentPage === "/green") {
-      this.lightIndex = 2;
-    }
-
-    // pass object contains time and color that should be set next.
-    this.setLights(this.lights[this.lightIndex]);
-  }
-};
+    this.checkIsPageChanged()
+    if ((this.timer !== localStorage.timer) && (localStorage.timer) && (!this.isPageChanged)) { //if page was changed
+      this.setLights(this.lights[this.lightIndex], Number(localStorage.timer));
+    } else { // if page didnt change, or was changed by setLight algoritm
+      this.setLights(this.lights[this.lightIndex]);
+    } 
+    
+}
+}
 </script>
 
 <style>

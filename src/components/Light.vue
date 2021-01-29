@@ -1,19 +1,19 @@
 <template>
-  <div class="light" :class="[{active: isActive}, {attention: isOn}, color ]"></div>
+  <div class="light" :class="[{active: isActive}, {blink: isOn}, color ]"></div>
 </template>
 <script>
 export default {
   props: {
     path: String,
     color: String,
-    attention: Boolean
+    blink: Boolean
   },
   computed: {
     isActive() {
       return this.$route.path === this.path;
     },
     isOn() {
-      return this.attention === true;
+      return this.blink === true;
     }
   }
 };
@@ -38,7 +38,7 @@ export default {
 .green {
   background-color: rgb(23, 172, 9);
 }
-.active.attention {
+.active.blink {
   -webkit-animation: blink 1s infinite;
   -moz-animation: blink 1s infinite;
   animation: blink 1s infinite;
